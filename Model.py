@@ -5,8 +5,10 @@ This defines a general "Model", i.e. architecture and decoding operations. It is
 e.g. the baseline softmax model or the ensemble Tanh model
 """
 
+import os
 import tensorflow as tf
 tf.compat.v1.enable_eager_execution
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.utils_keras import KerasModelWrapper as CleverHansKerasModelWrapper
 from tensorflow.keras.layers import BatchNormalization, Dropout, Lambda, Input, Dense, Conv2D, Flatten, Activation, Concatenate, GaussianNoise
 from tensorflow.keras.utils import plot_model
@@ -37,8 +39,9 @@ class WeightsSaver(Callback):
        if self.epoch % self.N == 0:
             print("SAVING WEIGHTS")
             w= self.model.get_weights()
-            pklfile= self.full_path + '_' + str(self.epoch) + '.pkl'
-            fpkl= open(pklfile, 'wb')        
+#            pklfile= self.full_path + '_' + str(self.epoch) + '.pkl'
+            pklfile= self.full_path + '_' + 'final' + '.pkl'
+            fpkl= open(pklfile, 'wb')
             pickle.dump(w, fpkl)
             fpkl.close()
        self.epoch += 1
@@ -141,7 +144,6 @@ class Model(object):
                 x_= Concatenate()([x0, x])
             
                 x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)                    
-                    
                 x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)
 
                 x_ = Flatten()(x_)
@@ -299,7 +301,7 @@ class Model(object):
        
         
     def saveModel(self):
-        w= self.model.get_weights()
+        w = self.model.get_weights()
         pklfile= self.params_dict['model_path'] + self.params_dict['name'] + '_final.pkl'
         fpkl= open(pklfile, 'wb')        
         pickle.dump(w, fpkl)

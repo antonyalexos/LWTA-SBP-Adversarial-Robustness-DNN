@@ -5,12 +5,15 @@ Run this to attack a trained model via TrainModel.
 Use the "loadFullModel" submethod to load in an already trained model (trained via TrainModel)
 The main attack function is "runAttacks" which runs attacks on trained models
 """
-
+import os
+import tensorflow as tf
+tf.compat.v1.enable_eager_execution
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.attacks import Noise, CarliniWagnerL2, MaxConfidence, FastGradientMethod, BasicIterativeMethod, DeepFool, MomentumIterativeMethod, ProjectedGradientDescent
 from Model_Implementations import Model_Softmax_Baseline, Model_Logistic_Baseline, Model_Logistic_Ensemble, Model_Tanh_Ensemble, Model_Tanh_Baseline
 from tensorflow.keras.datasets import mnist, cifar10
 from tensorflow.keras import backend
-import tensorflow as tf; import numpy as np
+import numpy as np
 import scipy.linalg
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -18,7 +21,7 @@ import matplotlib.pyplot as plt
 
 
 
-model_path = '/home/gunjan/Desktop/data/'  #path with saved model parameters 
+model_path = 'models/'  #path with saved model parameters 
 sess =  backend.get_session()
 backend.set_learning_phase(0) #need to do this to get CleverHans to work with batchnorm
 
@@ -53,17 +56,14 @@ X_random = np.random.rand(X_valid.shape[0],X_valid.shape[1],X_valid.shape[2],X_v
 
 
 #Model definition of the model we want to attack; should be same as the definition used in TrainModel
-name = 'tanh_16_diverse'+'_'+DATA_DESC; seed = 59; code_length=16; num_codes=code_length; num_chunks=4; base_model=None; 
+name = 'logistic_baseline'+'_'+DATA_DESC; num_chunks=1
+M = np.eye(num_classes).astype(np.float32)
+#output_activation = 'sigmoid';
 def output_activation(x):
-    return x#tf.nn.tanh(x)
-M = scipy.linalg.hadamard(code_length).astype(np.float32)
-M[np.arange(0, num_codes,2), 0]= -1
-np.random.seed(seed)
-np.random.shuffle(M)
-idx=np.random.permutation(code_length)
-M = M[0:num_codes, idx[0:code_length]]
-params_dict = {'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'base_model':base_model, 'num_chunks':num_chunks, 'model_rep': model_rep_ens, 'output_activation':output_activation, 'num_filters_ens':num_filters_ens, 'num_filters_ens_2':num_filters_ens_2,'batch_size':batch_size, 'epochs':epochs, 'dropout_rate':dropout_rate_ens,  'lr':lr, 'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-m4 = Model_Tanh_Ensemble(data_dict, params_dict)
+    return tf.nn.sigmoid(x)
+base_model=None
+params_dict = {'weight_decay':weight_decay, 'num_filters_std':num_filters_std, 'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'model_rep':model_rep_baseline, 'base_model':base_model, 'num_chunks':num_chunks, 'output_activation':output_activation,  'batch_size':batch_size, 'epochs':epochs, 'lr':lr, 'dropout_rate':dropout_rate_std,  'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
+m4 = Model_Logistic_Baseline(data_dict, params_dict)
 m4.loadFullModel() #load in the saved model, which should have already been trained first via TrainModel
 
 m4.legend = 'TEns16'; 

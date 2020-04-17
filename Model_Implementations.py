@@ -4,8 +4,10 @@
 Full implementation of all methods of Abstract class "Model"
 """
 
+import os
 import tensorflow as tf
 tf.compat.v1.enable_eager_execution
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import numpy as np
 from tensorflow.keras.layers import AveragePooling2D, BatchNormalization, Dropout, Multiply, Lambda, Input, Dense, Conv2D, MaxPooling2D, Flatten, Activation, UpSampling2D, Concatenate, GaussianNoise,Reshape
 from tensorflow.keras.utils import plot_model
@@ -36,8 +38,9 @@ def defineModelBaseline(self):
         x = Lambda(lambda x:  tf.clip_by_value(x,-0.5,0.5))(x)
 
 	#for some reason the tensor has None dimensions. Since they do not change we are going to put them back
-        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],x.shape[2]])
-
+#        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],x.shape[2]])
+        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],3])
+    
         for rep in np.arange(self.params_dict['model_rep']):
             x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
