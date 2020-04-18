@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Run this to attack a trained model via TrainModel. 
 Use the "loadFullModel" submethod to load in an already trained model (trained via TrainModel)
@@ -20,12 +18,7 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 
-
-
 model_path = 'models/'  #path with saved model parameters 
-sess = backend.get_session()
-backend.set_learning_phase(0) #need to do this to get CleverHans to work with batchnorm
-
 
 
 #Dataset-specific parameters - should be same as those used in TrainModel
@@ -54,8 +47,6 @@ data_dict = {'X_train':X_train, 'Y_train_cat':Y_train, 'X_test':X_test, 'Y_test_
 X_random = np.random.rand(X_valid.shape[0],X_valid.shape[1],X_valid.shape[2],X_valid.shape[3])-0.5; X_random = X_random.astype(np.float32)
 
 
-
-
 #Model definition of the model we want to attack; should be same as the definition used in TrainModel
 name = 'logistic_baseline'+'_'+DATA_DESC; num_chunks=1
 M = np.eye(num_classes).astype(np.float32)
@@ -74,14 +65,12 @@ m4.X_random = X_random;
 m4.minval = -0.5; m4.maxval = 0.5
 
 
-
-
 def benignAccuracy(model, X, Y):
     
     acc_vec=[]; probs_benign_list=[]
     for rep in np.arange(0, X.shape[0], 1000):
         x = X[rep:rep+1000]
-        probs_benign = sess.run(model.predict(tf.convert_to_tensor(x)))        
+        probs_benign = model.predict(tf.convert_to_tensor(x))     
         acc= np.mean(np.argmax(probs_benign, 1)==Y[rep:rep+1000])
         acc_vec += [acc]
         probs_benign_list += list(np.max(probs_benign, 1))
@@ -93,19 +82,18 @@ def benignAccuracy(model, X, Y):
 
 
 def wbAttack(model, attack, att_params, X, Y):
-    sess =  backend.get_session()
     modelCH = model.modelCH()
-    adv_model = attack(modelCH, sess=sess) 
+    adv_model = attack(modelCH, sess=None) 
     
     acc_vec=[]; probs_adv_list=[]
     inc=500
     for rep in np.arange(0, X.shape[0], inc):
         x = X[rep:rep+inc]
         y = Y[rep:rep+inc]
-        X_adv = adv_model.generate(tf.convert_to_tensor(x), **att_params).eval(session=sess)   
-        preds = np.argmax(sess.run(model.predict(tf.convert_to_tensor(X_adv))), 1)
+        X_adv = adv_model.generate(tf.convert_to_tensor(x), **att_params)  
+        preds = np.argmax(model.predict(tf.convert_to_tensor(X_adv)), 1)
         acc =  np.mean(np.equal(preds, y))
-        probs_adv = np.max(sess.run(model.predict(tf.convert_to_tensor(X_adv))), 1)
+        probs_adv = np.max(model.predict(tf.convert_to_tensor(X_adv)), 1)
         probs_adv = probs_adv[preds != y]
         acc= np.mean(np.equal(preds, y))
         acc_vec += [acc]
@@ -115,8 +103,6 @@ def wbAttack(model, attack, att_params, X, Y):
     acc = np.mean(acc_vec)        
     print("Adv accuracy for model " + model.params_dict['name'] + " : ", acc)    
     return probs_adv_list, acc, X_adv
-
-
 
 
 
@@ -149,7 +135,7 @@ def runAttacks(models_list):
                 
         #Random ATTACK (0 SNR inputs)
         print("Running random attack:")
-        probs_random = np.max(sess.run(model.predict(tf.convert_to_tensor(model.X_random))), 1)
+        probs_random = np.max(model.predict(tf.convert_to_tensor(model.X_random)), 1)
         print('Prob. that ', model.params_dict['name'], ' < 0.9 on random data: ', np.mean(probs_random<0.9))
         
         #Noise ATTACK (low SNR inputs)
