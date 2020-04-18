@@ -11,7 +11,7 @@ import keras.backend as K
 
 class SB_Layer(tf.keras.layers.Layer):
   
-  def __init__(self,K=5,U=2,bias=True,sbp=True,temp_bern=0.67,temp_cat=0.67, activation='lwta', **kwargs):
+  def __init__(self,K=5,U=2,bias=True,sbp=True,temp_bern=0.67,temp_cat=0.67,activation='lwta',**kwargs,dynamic=True):
     super(SB_Layer, self).__init__(**kwargs)
     self.tau = 1e-2
     self.K = K
@@ -219,3 +219,59 @@ class SB_Layer(tf.keras.layers.Layer):
     self.add_loss(layer_loss)
     # return out, self.mW, z*self.mW, z*self.sW**2, z
     return out
+    
+  @base_layer_utils.default
+  def get_config(self):
+    """Returns the config of the layer.
+    A layer config is a Python dictionary (serializable)
+    containing the configuration of a layer.
+    The same layer can be reinstantiated later
+    (without its trained weights) from this configuration.
+    The config of a layer does not include connectivity
+    information, nor the layer class name. These are handled
+    by `Network` (one layer of abstraction above).
+    Returns:
+        Python dictionary.
+    """
+    all_args = tf_inspect.getfullargspec(self.__init__).args
+    config = {'name': self.name, 'trainable': self.trainable}
+    if hasattr(self, '_batch_input_shape'):
+      config['batch_input_shape'] = self._batch_input_shape
+    if hasattr(self, 'dtype'):
+      config['dtype'] = self.dtype
+    if hasattr(self, 'dynamic'):
+      # Only include `dynamic` in the `config` if it is `True`
+      if self.dynamic:
+        config['dynamic'] = self.dynamic
+      elif 'dynamic' in all_args:
+        all_args.remove('dynamic')
+    expected_args = config.keys()
+    # Finds all arguments in the `__init__` that are not in the config:
+    extra_args = [arg for arg in all_args if arg not in expected_args]
+    # Check that either the only argument in the `__init__` is  `self`,
+    # or that `get_config` has been overridden:
+    if len(extra_args) > 1 and hasattr(self.get_config, '_is_default'):
+      raise NotImplementedError('Layers with arguments in `__init__` must '
+                                'override `get_config`.')
+    # TODO(reedwm): Handle serializing self._dtype_policy.
+    return config
+
+  @classmethod
+  def from_config(cls, config):
+    """Creates a layer from its config.
+    This method is the reverse of `get_config`,
+    capable of instantiating the same layer from the config
+    dictionary. It does not handle layer connectivity
+    (handled by Network), nor weights (handled by `set_weights`).
+    Arguments:
+        config: A Python dictionary, typically the
+            output of get_config.
+    Returns:
+        A layer instance.
+    """
+    return cls(**config)
+  
+  
+  
+  
+  
