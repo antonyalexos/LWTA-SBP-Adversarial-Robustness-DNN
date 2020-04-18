@@ -6,12 +6,12 @@ import tensorflow as tf
 from tensorflow import keras
 import tensorflow_probability as tfp
 tfd = tfp.distributions
-
+from tensorflow.python.util import tf_inspect
 import keras.backend as K
 
 class SB_Layer(tf.keras.layers.Layer):
   
-  def __init__(self,K=5,U=2,bias=True,sbp=True,temp_bern=0.67,temp_cat=0.67,activation='lwta',**kwargs,dynamic=True):
+  def __init__(self,K=5,U=2,bias=True,sbp=True,temp_bern=0.67,temp_cat=0.67,activation='lwta',dynamic=True,**kwargs):
     super(SB_Layer, self).__init__(**kwargs)
     self.tau = 1e-2
     self.K = K
@@ -220,7 +220,6 @@ class SB_Layer(tf.keras.layers.Layer):
     # return out, self.mW, z*self.mW, z*self.sW**2, z
     return out
     
-  @base_layer_utils.default
   def get_config(self):
     """Returns the config of the layer.
     A layer config is a Python dictionary (serializable)

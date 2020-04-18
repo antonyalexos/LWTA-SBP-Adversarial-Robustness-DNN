@@ -5,11 +5,12 @@ import tensorflow as tf
 from tensorflow import keras
 import tensorflow_probability as tfp
 tfd = tfp.distributions
+from tensorflow.python.util import tf_inspect
 
 class SB_Conv2d(tf.keras.layers.Layer):
 
-  def __init__(self, ksize, padding='SAME', strides=[1,1,1,1], bias = True, sbp=False, temp_bern=0.67, temp_cat=0.67, activation='lwta'**kwargs,dynamic=True):
-    super(SB_Conv2d, self).__init__()
+  def __init__(self, ksize, padding='SAME', strides=[1,1,1,1], bias = True, sbp=False, temp_bern=0.67, temp_cat=0.67, activation='lwta',dynamic=True,**kwargs):
+    super(SB_Conv2d, self).__init__(**kwargs)
     self.tau = 1e-2
     self.ksize = ksize
     self.padding = padding
@@ -223,7 +224,6 @@ class SB_Conv2d(tf.keras.layers.Layer):
       # return self.out, self.mW, self.z*self.mW, self.z*self.sW**2, self.z
     return out
 
-  @base_layer_utils.default
   def get_config(self):
     """Returns the config of the layer.
     A layer config is a Python dictionary (serializable)

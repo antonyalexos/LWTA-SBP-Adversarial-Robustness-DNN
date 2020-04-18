@@ -6,8 +6,9 @@ Full implementation of all methods of Abstract class "Model"
 
 import os
 import tensorflow as tf
-tf.enable_eager_execution()
-tf.config.experimental_run_functions_eagerly(True)
+tf.compat.v1.disable_eager_execution()
+#tf.enable_eager_execution()
+#tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import numpy as np
 from tensorflow.keras.layers import AveragePooling2D, BatchNormalization, Dropout, Multiply, Lambda, Input, Dense, Conv2D, MaxPooling2D, Flatten, Activation, UpSampling2D, Concatenate, GaussianNoise,Reshape

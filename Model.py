@@ -7,8 +7,9 @@ e.g. the baseline softmax model or the ensemble Tanh model
 
 import os
 import tensorflow as tf
-tf.enable_eager_execution()
-tf.config.experimental_run_functions_eagerly(True)
+tf.compat.v1.disable_eager_execution()
+#tf.enable_eager_execution()
+#tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.utils_keras import KerasModelWrapper as CleverHansKerasModelWrapper
 from tensorflow.keras.layers import BatchNormalization, Dropout, Lambda, Input, Dense, Conv2D, Flatten, Activation, Concatenate, GaussianNoise
