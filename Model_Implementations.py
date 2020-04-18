@@ -45,31 +45,31 @@ def defineModelBaseline(self):
     
         for rep in np.arange(self.params_dict['model_rep']):
             # x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_std'][0]//2),2],activation='lwta',sbp=True)(x)
+            x = SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_std'][0]//2),2],activation='lwta',sbp=True)(x)
             
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
         # x = Conv2D(self.params_dict['num_filters_std'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][0]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
+        x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][0]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
 
         for rep in np.arange(self.params_dict['model_rep']):
             # x = Conv2D(self.params_dict['num_filters_std'][1], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],activation='lwta',sbp=True)(x)
+            x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],activation='lwta',sbp=True)(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
         # x = Conv2D(self.params_dict['num_filters_std'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)               
+        x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)               
         
         for rep in np.arange(self.params_dict['model_rep']):
             # x = Conv2D(self.params_dict['num_filters_std'][2], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],activation='lwta',sbp=True)(x)
+            x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],activation='lwta',sbp=True)(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
         # x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
+        x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
 
         x_ = Flatten()(x_)
 #        x_ = tf.contrib.layers.flatten(x_)

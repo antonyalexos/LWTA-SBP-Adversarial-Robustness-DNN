@@ -1,5 +1,5 @@
-from .distributions import normal_kl, bin_concrete_kl, concrete_kl, kumaraswamy_kl
-from .distributions import kumaraswamy_sample, bin_concrete_sample, concrete_sample
+from distributions import normal_kl, bin_concrete_kl, concrete_kl, kumaraswamy_kl
+from distributions import kumaraswamy_sample, bin_concrete_sample, concrete_sample
 
 import tensorflow as tf
 from tensorflow import keras
