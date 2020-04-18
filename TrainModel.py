@@ -10,7 +10,8 @@ Next run "AttackModel" to then attack this model.
 #IMPORTS 
 import os
 import tensorflow as tf
-tf.compat.v1.enable_eager_execution
+tf.enable_eager_execution()
+tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
 import numpy as np
 from tensorflow.keras.datasets import mnist, cifar10
@@ -46,7 +47,7 @@ Y_train = np.squeeze(Y_train); Y_test = np.squeeze(Y_test)
 num_channels = 3; inp_shape = (32,32,3); num_classes=10
 #MODEL-SPECIFIC PARAMETERS: CIFAR10
 #PARAMETERS RELATED TO SGD OPTIMIZATION
-epochs=10; batch_size=200; lr=2e-4; 
+epochs=100; batch_size=200; lr=2e-4; 
 #MODEL DEFINTION PARAMETERS
 num_filters_std = [32, 64, 128]; num_filters_ens=[32, 64, 128]; num_filters_ens_2=16; 
 dropout_rate_std=0.0; dropout_rate_ens=0.0; weight_decay = 0 

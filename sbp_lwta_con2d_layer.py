@@ -138,7 +138,7 @@ class SB_Conv2d(tf.keras.layers.Layer):
       layer_loss = layer_loss + tf.math.reduce_mean(kl_weights)/60000
            
       # convolution operation
-      lam = tf.nn.conv2d(inputs, re, strides=self.strides, padding = self.padding) + self.biases
+      lam = tf.nn.conv2d(inputs, re, strides=(self.strides[0],self.strides[1]), padding = self.padding) + self.biases
 
       if self.activation=='lwta':
         assert self.ksize[-1]>1, 'The number of competing units should be larger than 1'
@@ -193,7 +193,7 @@ class SB_Conv2d(tf.keras.layers.Layer):
             re = tf.tile(mask*t_pi_sigmoid,[self.ksize[-1]])
         
         # convolution operation
-        lam = tf.nn.conv2d(inputs, re * self.mW,  strides=self.strides, padding = self.padding) + self.biases
+        lam = tf.nn.conv2d(inputs, re * self.mW, strides=(self.strides[0],self.strides[1]) , padding = self.padding) + self.biases
         
         if self.activation == 'lwta':
             # calculate probabilities of activation

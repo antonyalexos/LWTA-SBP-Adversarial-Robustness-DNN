@@ -7,7 +7,8 @@ The main attack function is "runAttacks" which runs attacks on trained models
 """
 import os
 import tensorflow as tf
-tf.compat.v1.enable_eager_execution
+tf.enable_eager_execution()
+tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.attacks import Noise, CarliniWagnerL2, MaxConfidence, FastGradientMethod, BasicIterativeMethod, DeepFool, MomentumIterativeMethod, ProjectedGradientDescent
 from Model_Implementations import Model_Softmax_Baseline, Model_Logistic_Baseline, Model_Logistic_Ensemble, Model_Tanh_Ensemble, Model_Tanh_Baseline
@@ -22,7 +23,7 @@ import matplotlib.pyplot as plt
 
 
 model_path = 'models/'  #path with saved model parameters 
-sess =  backend.get_session()
+sess = backend.get_session()
 backend.set_learning_phase(0) #need to do this to get CleverHans to work with batchnorm
 
 
@@ -135,15 +136,15 @@ def runAttacks(models_list):
         probs_adv, junk, X_adv = wbAttack(model, ProjectedGradientDescent, att_params, model.X_valid, model.Y_valid)
         print("")
         
-#        print("Running CW attack:")
-#        att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
-#        probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, model.X_valid[0:100], model.Y_valid[0:100])
-#        print("")
-#        
-#        print("Running Blind Spot attack, alpha=0.8:")
-#        att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
-#        probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, 0.8*model.X_valid[0:100], model.Y_valid[0:100])
-#        print("")
+       print("Running CW attack:")
+       att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
+       probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, model.X_valid[0:100], model.Y_valid[0:100])
+       print("")
+
+       print("Running Blind Spot attack, alpha=0.8:")
+       att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
+       probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, 0.8*model.X_valid[0:100], model.Y_valid[0:100])
+       print("")
         
                 
         #Random ATTACK (0 SNR inputs)

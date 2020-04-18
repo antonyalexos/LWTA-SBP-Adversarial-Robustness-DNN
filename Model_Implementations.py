@@ -6,7 +6,8 @@ Full implementation of all methods of Abstract class "Model"
 
 import os
 import tensorflow as tf
-tf.compat.v1.enable_eager_execution
+tf.enable_eager_execution()
+tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import numpy as np
 from tensorflow.keras.layers import AveragePooling2D, BatchNormalization, Dropout, Multiply, Lambda, Input, Dense, Conv2D, MaxPooling2D, Flatten, Activation, UpSampling2D, Concatenate, GaussianNoise,Reshape
@@ -69,7 +70,7 @@ def defineModelBaseline(self):
                 x = BatchNormalization()(x)
 
         # x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-        x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
+        x_ = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
 
         x_ = Flatten()(x_)
 #        x_ = tf.contrib.layers.flatten(x_)
@@ -79,10 +80,10 @@ def defineModelBaseline(self):
         # x_ = Dense(64, activation='elu')(x_) 
         x_ = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)     
         # x0 = Dense(64, activation='linear')(x_)
-        x_ = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)
+        x0 = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)
         
         # x1 = Dense(self.params_dict['M'].shape[1], activation='linear', kernel_regularizer=regularizers.l2(0.0))(x0)
-        x_ = SB_Layer(K=int(self.params_dict['M'].shape[1]//2),U=2,activation='lwta',sbp=True)(x_)
+        x1 = SB_Layer(K=int(self.params_dict['M'].shape[1]//2),U=2,activation='lwta',sbp=True)(x0)
         
                 
         outputs = [x1]

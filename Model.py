@@ -7,7 +7,8 @@ e.g. the baseline softmax model or the ensemble Tanh model
 
 import os
 import tensorflow as tf
-tf.compat.v1.enable_eager_execution
+tf.enable_eager_execution()
+tf.config.experimental_run_functions_eagerly(True)
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.utils_keras import KerasModelWrapper as CleverHansKerasModelWrapper
 from tensorflow.keras.layers import BatchNormalization, Dropout, Lambda, Input, Dense, Conv2D, Flatten, Activation, Concatenate, GaussianNoise
@@ -166,12 +167,12 @@ class Model(object):
                 # x_ = Dense(4, activation='elu')(x_) 
                 x_ = SB_Layer(K=2,U=2,activation='lwta',sbp=True)(x_)
                 # x0 = Dense(2, activation='linear')(x_)
-                x_ = SB_Layer(K=1,U=2,activation='lwta',sbp=True)(x_)
+                x_ = SB_Layer(K=1,U=2,activation='none',sbp=True)(x_)
 
                 pens += [x0]                
 
                 # x1 = Dense(1, activation='linear', name='w_'+str(k)+'_'+str(k2)+'_'+self.params_dict['name'], kernel_regularizer=regularizers.l2(0.0))(x0)
-                x1 = SB_Layer(K=1,U=2,activation='lwta',sbp=True)(x0)
+                x1 = SB_Layer(K=1,U=2,activation='none',sbp=True)(x0)
                 x1 = (x1[:,0]+x1[:,1])/2
                 out += [x1]
                 
