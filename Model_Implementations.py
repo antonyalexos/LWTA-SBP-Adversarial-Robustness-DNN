@@ -18,7 +18,8 @@ import numpy as np
 from tensorflow.keras import losses, metrics
 from ClassBlender import ClassBlender
 from DataAugmenter import DataAugmenter
-
+from sbp_lwta_con2d_layer import SB_Conv2d
+from sbp_lwta_dense_layer import SB_Layer
 
 
 #Full architectural definition for all "baseline" models used in the paper
@@ -39,37 +40,50 @@ def defineModelBaseline(self):
 
 	#for some reason the tensor has None dimensions. Since they do not change we are going to put them back
 #        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],x.shape[2]])
+    # for CIFAR the last dimension is 3. But for MNIST it should be something else.
         x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],3])
     
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            # x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_std'][0]//2),2],activation='lwta',sbp=True)(x)
+            
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x = Conv2D(self.params_dict['num_filters_std'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)  
+        # x = Conv2D(self.params_dict['num_filters_std'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][0]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
 
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][1], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            # x = Conv2D(self.params_dict['num_filters_std'][1], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],activation='lwta',sbp=True)(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x = Conv2D(self.params_dict['num_filters_std'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)         
-        
+        # x = Conv2D(self.params_dict['num_filters_std'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)               
         
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][2], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            # x = Conv2D(self.params_dict['num_filters_std'][2], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],activation='lwta',sbp=True)(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+        # x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+        x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
 
         x_ = Flatten()(x_)
 #        x_ = tf.contrib.layers.flatten(x_)
                
-        x_ = Dense(128, activation='elu')(x_)  
-        x_ = Dense(64, activation='elu')(x_)         
-        x0 = Dense(64, activation='linear')(x_) 
-        x1 = Dense(self.params_dict['M'].shape[1], activation='linear', kernel_regularizer=regularizers.l2(0.0))(x0)
+        # x_ = Dense(128, activation='elu')(x_)
+        x_ = SB_Layer(K=64,U=2,activation='lwta',sbp=True)(x_)
+        # x_ = Dense(64, activation='elu')(x_) 
+        x_ = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)     
+        # x0 = Dense(64, activation='linear')(x_)
+        x_ = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)
+        
+        # x1 = Dense(self.params_dict['M'].shape[1], activation='linear', kernel_regularizer=regularizers.l2(0.0))(x0)
+        x_ = SB_Layer(K=int(self.params_dict['M'].shape[1]//2),U=2,activation='lwta',sbp=True)(x_)
+        
                 
         outputs = [x1]
         self.model = KerasModel(inputs=self.input, outputs=outputs)
@@ -78,9 +92,6 @@ def defineModelBaseline(self):
 
         return outputs  
         
-
-
-
 
 class Model_Softmax_Baseline(Model):
     
@@ -104,18 +115,6 @@ class Model_Softmax_Baseline(Model):
         return [metrics.categorical_accuracy]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 class Model_Logistic_Baseline(Model):
     
     def __init__(self, data_dict, params_dict):
@@ -133,9 +132,7 @@ class Model_Logistic_Baseline(Model):
             return loss 
         return loss_fn
     
-
-    
-    
+   
     def defineMetric(self): 
         def sigmoid_pred(y_true, y_pred):
             
@@ -143,16 +140,6 @@ class Model_Logistic_Baseline(Model):
             return tf.reduce_mean(corr)
         
         return [sigmoid_pred]
-
-
-
-
-
-
-
-
-
-
 
           
 class Model_Tanh_Baseline(Model):
@@ -183,15 +170,7 @@ class Model_Tanh_Baseline(Model):
             return tf.reduce_mean(corr)
         return [tanh_pred]
 
-
-
-
-
-
-
-
-
-        
+      
 class Model_Logistic_Ensemble(Model):
     
     def __init__(self, data_dict, params_dict):
@@ -212,10 +191,6 @@ class Model_Logistic_Ensemble(Model):
             return tf.reduce_mean(corr)
         
         return [sigmoid_pred]
-
-
-
-
 
 
 
@@ -242,4 +217,3 @@ class Model_Tanh_Ensemble(Model):
             return tf.reduce_mean(corr)
         return [hinge_pred]
           
-    

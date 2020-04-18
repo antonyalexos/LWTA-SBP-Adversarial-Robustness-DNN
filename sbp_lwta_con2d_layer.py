@@ -8,7 +8,7 @@ tfd = tfp.distributions
 
 class SB_Conv2d(tf.keras.layers.Layer):
 
-  def __init__(self, ksize, padding='SAME', strides=[1,1,1,1], bias = True, sbp=False, temp_bern=0.67, temp_cat=0.5, activation='lwta'):
+  def __init__(self, ksize, padding='SAME', strides=[1,1,1,1], bias = True, sbp=False, temp_bern=0.67, temp_cat=0.67, activation='lwta'):
     super(SB_Conv2d, self).__init__()
     self.tau = 1e-2
     self.ksize = ksize

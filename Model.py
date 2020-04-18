@@ -11,7 +11,7 @@ tf.compat.v1.enable_eager_execution
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from cleverhans.utils_keras import KerasModelWrapper as CleverHansKerasModelWrapper
 from tensorflow.keras.layers import BatchNormalization, Dropout, Lambda, Input, Dense, Conv2D, Flatten, Activation, Concatenate, GaussianNoise
-from tensorflow.keras.utils import plot_model
+# from tensorflow.keras.utils import plot_model
 from tensorflow.keras import regularizers
 from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
@@ -23,8 +23,8 @@ from ClassBlender import ClassBlender
 from DataAugmenter import DataAugmenter
 from Clipper import Clipper
 from Grayscaler import Grayscaler
-
-
+from sbp_lwta_con2d_layer import SB_Conv2d
+from sbp_lwta_dense_layer import SB_Layer
 
 
 class WeightsSaver(Callback):
@@ -104,32 +104,38 @@ class Model(object):
             x_gs = Clipper()(x_gs)
                                     
             for rep in np.arange(self.params_dict['model_rep']):
-                x = Conv2D(self.params_dict['num_filters_ens'][0], (5,5), activation='elu', padding='same')(x)          
+                # x = Conv2D(self.params_dict['num_filters_ens'][0], (5,5), activation='elu', padding='same')(x)
+                x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_ens'][0]//2),2],activation='lwta',sbp=True)(x)       
                 if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                     x = BatchNormalization()(x)
             
 
-            x = Conv2D(self.params_dict['num_filters_ens'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+            # x = Conv2D(self.params_dict['num_filters_ens'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens'][0]//2),2],activation='lwta',sbp=True)(x) 
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
 
             for rep in np.arange(self.params_dict['model_rep']):
-                x = Conv2D(self.params_dict['num_filters_ens'][1], (3, 3), activation='elu', padding='same')(x)
+                # x = Conv2D(self.params_dict['num_filters_ens'][1], (3, 3), activation='elu', padding='same')(x)
+                x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens'][1]//2),2],activation='lwta',sbp=True)(x) 
                 if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                     x = BatchNormalization()(x)
             
-            x = Conv2D(self.params_dict['num_filters_ens'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)  
+            # x = Conv2D(self.params_dict['num_filters_ens'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens'][1]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x) 
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
             
             for rep in np.arange(self.params_dict['model_rep']):
-                x = Conv2D(self.params_dict['num_filters_ens'][2], (3, 3), activation='elu', padding='same')(x)
+                # x = Conv2D(self.params_dict['num_filters_ens'][2], (3, 3), activation='elu', padding='same')(x)
+                x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens'][2]//2),2],activation='lwta',sbp=True)(x) 
                 if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                     x = BatchNormalization()(x)
             
             
-            x = Conv2D(self.params_dict['num_filters_ens'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)  
+            # x = Conv2D(self.params_dict['num_filters_ens'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
+            x = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x) 
             #x = BatchNormalization()(x)
 
 
@@ -137,25 +143,36 @@ class Model(object):
             pens = []
             out=[]
             for k2 in np.arange(n):
-                x0 = Conv2D(self.params_dict['num_filters_ens_2'], (5, 5), strides=(2,2), activation='elu', padding='same')(x_gs)
-                x0 = Conv2D(self.params_dict['num_filters_ens_2'], (3, 3), strides=(2,2), activation='elu', padding='same')(x0)
-                x0 = Conv2D(self.params_dict['num_filters_ens_2'], (3, 3), strides=(2,2), activation='elu', padding='same')(x0)
+                # x0 = Conv2D(self.params_dict['num_filters_ens_2'], (5, 5), strides=(2,2), activation='elu', padding='same')(x_gs)
+                x0 = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_ens_2']//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x_gs) 
+                # x0 = Conv2D(self.params_dict['num_filters_ens_2'], (3, 3), strides=(2,2), activation='elu', padding='same')(x0)
+                x0 = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens_2']//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x0) 
+                # x0 = Conv2D(self.params_dict['num_filters_ens_2'], (3, 3), strides=(2,2), activation='elu', padding='same')(x0)
+                x0 = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_ens_2']//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x0) 
 
                 x_= Concatenate()([x0, x])
             
-                x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)                    
-                x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)
+                # x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)   
+                x_ = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[2,2,int(self.params_dict['num_filters_ens_2']//2),2],activation='lwta',sbp=True)(x_)                                  
+                # x_ = Conv2D(self.params_dict['num_filters_ens_2'], (2, 2), activation='elu', padding='same')(x_)
+                x_ = sbp_lwta_con2d_layer.SB_Conv2d(ksize=[2,2,int(self.params_dict['num_filters_ens_2']//2),2],activation='lwta',sbp=True)(x_) 
 
                 x_ = Flatten()(x_)
 
-                x_ = Dense(16, activation='elu')(x_) 
-                x_ = Dense(8, activation='elu')(x_) 
-                x_ = Dense(4, activation='elu')(x_) 
-                x0 = Dense(2, activation='linear')(x_) 
+                # x_ = Dense(16, activation='elu')(x_)
+                x_ = SB_Layer(K=8,U=2,activation='lwta',sbp=True)(x_)
+                # x_ = Dense(8, activation='elu')(x_)
+                x_ = SB_Layer(K=4,U=2,activation='lwta',sbp=True)(x_)
+                # x_ = Dense(4, activation='elu')(x_) 
+                x_ = SB_Layer(K=2,U=2,activation='lwta',sbp=True)(x_)
+                # x0 = Dense(2, activation='linear')(x_)
+                x_ = SB_Layer(K=1,U=2,activation='lwta',sbp=True)(x_)
 
                 pens += [x0]                
 
-                x1 = Dense(1, activation='linear', name='w_'+str(k)+'_'+str(k2)+'_'+self.params_dict['name'], kernel_regularizer=regularizers.l2(0.0))(x0) 
+                # x1 = Dense(1, activation='linear', name='w_'+str(k)+'_'+str(k2)+'_'+self.params_dict['name'], kernel_regularizer=regularizers.l2(0.0))(x0)
+                x1 = SB_Layer(K=1,U=2,activation='lwta',sbp=True)(x0)
+                x1 = (x1[:,0]+x1[:,1])/2
                 out += [x1]
                 
             self.penultimate += [pens]
@@ -172,7 +189,7 @@ class Model(object):
 
         self.model = KerasModel(inputs=self.input, outputs=outputs)
         print(self.model.summary())
-        plot_model(self.model, to_file=self.params_dict['model_path'] + '/' + self.params_dict['name'] + '.png')    
+        # plot_model(self.model, to_file=self.params_dict['model_path'] + '/' + self.params_dict['name'] + '.png')
 
         return outputs 
     
