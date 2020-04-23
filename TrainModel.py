@@ -12,7 +12,7 @@ import os
 import tensorflow as tf
 tf.enable_eager_execution()
 tf.config.experimental_run_functions_eagerly(True)
-os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
+os.environ['CUDA_VISIBLE_DEVICES'] = '' 
 import numpy as np
 from tensorflow.keras.datasets import mnist, cifar10
 from Model_Implementations import Model_Softmax_Baseline, Model_Logistic_Baseline, Model_Logistic_Ensemble, Model_Tanh_Ensemble, Model_Tanh_Baseline
@@ -21,7 +21,7 @@ import scipy.linalg
 
 #GENERAL PARAMETERS - SET THESE APPROPRIATELY
 model_path = 'models/'  #path to save model weights to
-weight_save_freq = 5  #how frequently (in epochs, e.g. every 10 epochs) to save weights to disk
+weight_save_freq = 1  #how frequently (in epochs, e.g. every 10 epochs) to save weights to disk
 tf.set_random_seed(1) 
 
 

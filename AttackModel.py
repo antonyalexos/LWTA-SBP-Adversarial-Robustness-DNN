@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 import os
 import tensorflow as tf
 #tf.compat.v1.enable_eager_execution
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 from cleverhans.attacks import Noise, CarliniWagnerL2, MaxConfidence, FastGradientMethod, BasicIterativeMethod, DeepFool, MomentumIterativeMethod, ProjectedGradientDescent
 from Model_Implementations import Model_Softmax_Baseline, Model_Logistic_Baseline, Model_Logistic_Ensemble, Model_Tanh_Ensemble, Model_Tanh_Baseline
 from tensorflow.keras.datasets import mnist, cifar10
@@ -119,9 +119,6 @@ def wbAttack(model, attack, att_params, X, Y):
     return probs_adv_list, acc, X_adv
 
 
-
-
-
 def runAttacks(models_list):
     #CW attack
     for model in models_list:
@@ -137,16 +134,16 @@ def runAttacks(models_list):
         att_params = {'clip_min': model.minval, 'clip_max':model.maxval, 'eps':eps_val, 'eps_iter':eps_iter, 'nb_iter':PGD_iters,'ord':np.inf}
         probs_adv, junk, X_adv = wbAttack(model, ProjectedGradientDescent, att_params, model.X_valid, model.Y_valid)
         print("")
-        
-       # print("Running CW attack:")
-       # att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
-       # probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, model.X_valid[0:100], model.Y_valid[0:100])
-       # print("")
-        
-       # print("Running Blind Spot attack, alpha=0.8:")
-       # att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
-       # probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, 0.8*model.X_valid[0:100], model.Y_valid[0:100])
-       # print("")
+
+        print("Running CW attack:")
+        att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
+        probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, model.X_valid[0:100], model.Y_valid[0:100])
+        print("")
+
+        print("Running Blind Spot attack, alpha=0.8:")
+        att_params = {'clip_min': model.minval, 'clip_max':model.maxval,  'binary_search_steps':10, 'learning_rate':1e-3}
+        probs_adv, junk, X_adv = wbAttack(model, CarliniWagnerL2, att_params, 0.8*model.X_valid[0:100], model.Y_valid[0:100])
+        print("")
         
                 
         #Random ATTACK (0 SNR inputs)
@@ -159,10 +156,8 @@ def runAttacks(models_list):
         att_params = {'clip_min': model.minval, 'clip_max':model.maxval, 'eps':noise_eps}
         probs_noise, junk, X_adv = wbAttack(model, Noise, att_params, model.X_valid, model.Y_valid)
         print("")
-        
-    return probs_benign, probs_adv, probs_noise
-        
 
+    return probs_benign, probs_adv, probs_noise
 
 
 models_list = [m4]
@@ -179,4 +174,3 @@ plt.plot(np.arange(0, 1, .01), kernel.pdf(np.arange(0, 1, .01)), linewidth=4)
 plt.figure(3)
 kernel = stats.gaussian_kde(probs_noise, bw_method=0.5)
 plt.plot(np.arange(0, 1, .01), kernel.pdf(np.arange(0, 1, .01)), linewidth=4)   
-

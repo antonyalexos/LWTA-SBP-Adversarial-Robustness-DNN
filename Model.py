@@ -11,7 +11,7 @@ import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
 #tf.enable_eager_execution()
 #tf.config.experimental_run_functions_eagerly(True)
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 from cleverhans.utils_keras import KerasModelWrapper as CleverHansKerasModelWrapper
 from tensorflow.keras.layers import BatchNormalization, Dropout, Lambda, Input, Dense, Conv2D, Flatten, Activation, Concatenate, GaussianNoise
 # from tensorflow.keras.utils import plot_model
