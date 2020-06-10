@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Some helper functions for the distributions. 
-
-@author: Konstantinos Panagiotis Panousis
-National and Kapodistrian University of Athens
-"""
-
 import tensorflow as tf
 import numpy as np
 import tensorflow_probability as tfp
