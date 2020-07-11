@@ -57,7 +57,7 @@ To run the attacks you can use either `Attack_Model.ipynb` or `Attack_Model.py`.
 
 ## Pre-trained Models
 
-You can download pretrained models from [here](https://drive.google.com/drive/folders/1gv5VVdRV9M60Zn-oW-1m7ZGenaHnA27g?usp=sharing)
+Having space constraints on the supplementary material(100 mb) we have not included all the pretrained models. We uploaded only a few models with 4 competing units since they do not produce good results, and all the models with 2 competing units.
 
 
 ## References

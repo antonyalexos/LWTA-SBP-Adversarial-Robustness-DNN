@@ -48,4 +48,4 @@ class LWTA_Conv2D_Activation(tf.keras.layers.Layer):
 
         self.add_loss(layer_loss)
 
-        return out
+        return out, prbs

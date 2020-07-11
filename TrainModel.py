@@ -12,7 +12,7 @@ import os
 import tensorflow as tf
 tf.enable_eager_execution()
 tf.config.experimental_run_functions_eagerly(True)
-os.environ['CUDA_VISIBLE_DEVICES'] = '' 
+os.environ['CUDA_VISIBLE_DEVICES'] = '0' 
 import numpy as np
 from tensorflow.keras.datasets import mnist, cifar10
 from Model_Implementations import Model_Softmax_Baseline, Model_Logistic_Baseline, Model_Logistic_Ensemble, Model_Tanh_Ensemble, Model_Tanh_Baseline
@@ -20,41 +20,41 @@ import scipy.linalg
 
 
 #GENERAL PARAMETERS - SET THESE APPROPRIATELY
-model_path = 'models/'  #path to save model weights to
+model_path = 'models_4/'  #path to save model weights to
 weight_save_freq = 1  #how frequently (in epochs, e.g. every 10 epochs) to save weights to disk
 tf.set_random_seed(1) 
 
 
-########DATASET-SPECIFIC PARAMETERS: CHOOSE THIS BLOCK FOR MNIST
-#DATA_DESC = 'MNIST'; (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
-#Y_train = np.squeeze(Y_train); Y_test = np.squeeze(Y_test)
-#num_channels = 1; inp_shape = (28,28,1); num_classes=10
-##MODEL-SPECIFIC PARAMETERS: MNIST
-##PARAMETERS RELATED TO SGD OPTIMIZATION
-#epochs=150; batch_size=200; lr=3e-4; 
-##MODEL DEFINTION PARAMETERS
-#num_filters_std = [64, 64, 64]; num_filters_ens=[32, 32, 32]; num_filters_ens_2=4; 
-#dropout_rate_std=0.0; dropout_rate_ens=0.0; weight_decay = 0 
-#noise_stddev = 0.3; blend_factor=0.3; 
-#model_rep_baseline=1; model_rep_ens=2; 
-#DATA_AUGMENTATION_FLAG=0; BATCH_NORMALIZATION_FLAG=0
-########END: DATASET-SPECIFIC PARAMETERS: MNIST
-
-
-##########DATASET-SPECIFIC PARAMETERS: CHOOSE THIS BLOCK FOR CIFAR10
-DATA_DESC = 'CIFAR10'; (X_train, Y_train), (X_test, Y_test) = cifar10.load_data()
+#######DATASET-SPECIFIC PARAMETERS: CHOOSE THIS BLOCK FOR MNIST
+DATA_DESC = 'MNIST'; (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
 Y_train = np.squeeze(Y_train); Y_test = np.squeeze(Y_test)
-num_channels = 3; inp_shape = (32,32,3); num_classes=10
-#MODEL-SPECIFIC PARAMETERS: CIFAR10
+num_channels = 1; inp_shape = (28,28,1); num_classes=10
+#MODEL-SPECIFIC PARAMETERS: MNIST
 #PARAMETERS RELATED TO SGD OPTIMIZATION
-epochs=100; batch_size=200; lr=2e-4; 
+epochs=150; batch_size=200; lr=3e-4; 
 #MODEL DEFINTION PARAMETERS
-num_filters_std = [32, 64, 128]; num_filters_ens=[32, 64, 128]; num_filters_ens_2=16; 
+num_filters_std = [64, 64, 64]; num_filters_ens=[32, 32, 32]; num_filters_ens_2=4; 
 dropout_rate_std=0.0; dropout_rate_ens=0.0; weight_decay = 0 
-noise_stddev = 0.032; blend_factor=0.032; 
-model_rep_baseline=2; model_rep_ens=2; 
-DATA_AUGMENTATION_FLAG=1; BATCH_NORMALIZATION_FLAG=1
-##########END: DATASET-SPECIFIC PARAMETERS: CIFAR10
+noise_stddev = 0.3; blend_factor=0.3; 
+model_rep_baseline=1; model_rep_ens=2; 
+DATA_AUGMENTATION_FLAG=0; BATCH_NORMALIZATION_FLAG=0
+#######END: DATASET-SPECIFIC PARAMETERS: MNIST
+
+
+# ##########DATASET-SPECIFIC PARAMETERS: CHOOSE THIS BLOCK FOR CIFAR10
+# DATA_DESC = 'CIFAR10'; (X_train, Y_train), (X_test, Y_test) = cifar10.load_data()
+# Y_train = np.squeeze(Y_train); Y_test = np.squeeze(Y_test)
+# num_channels = 3; inp_shape = (32,32,3); num_classes=10
+# #MODEL-SPECIFIC PARAMETERS: CIFAR10
+# #PARAMETERS RELATED TO SGD OPTIMIZATION
+# epochs=100; batch_size=200; lr=2e-4; 
+# #MODEL DEFINTION PARAMETERS
+# num_filters_std = [32, 64, 128]; num_filters_ens=[32, 64, 128]; num_filters_ens_2=16; 
+# dropout_rate_std=0.0; dropout_rate_ens=0.0; weight_decay = 0 
+# noise_stddev = 0.032; blend_factor=0.032; 
+# model_rep_baseline=2; model_rep_ens=2; 
+# DATA_AUGMENTATION_FLAG=1; BATCH_NORMALIZATION_FLAG=1
+# ##########END: DATASET-SPECIFIC PARAMETERS: CIFAR10
 
 
 
@@ -76,8 +76,8 @@ name = 'softmax_baseline'+'_'+DATA_DESC; num_chunks=1
 M = np.eye(num_classes).astype(np.float32)
 output_activation = 'softmax'; base_model=None
 params_dict = {'weight_decay':weight_decay, 'num_filters_std':num_filters_std, 'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'model_rep':model_rep_baseline, 'base_model':base_model, 'num_chunks':num_chunks, 'output_activation':output_activation,  'batch_size':batch_size, 'epochs':epochs, 'lr':lr, 'dropout_rate':dropout_rate_std,  'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-#m0 = Model_Softmax_Baseline(data_dict, params_dict)
-#m0.defineModel(); m0.trainModel()
+m0 = Model_Softmax_Baseline(data_dict, params_dict)
+m0.defineModel(); m0.trainModel()
 
 
 ## BASELINE LOGISTIC MODEL DEFINITION
@@ -85,8 +85,8 @@ name = 'logistic_baseline'+'_'+DATA_DESC; num_chunks=1
 M = np.eye(num_classes).astype(np.float32)
 output_activation = 'sigmoid'; base_model=None
 params_dict = {'weight_decay':weight_decay, 'num_filters_std':num_filters_std, 'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'model_rep':model_rep_baseline, 'base_model':base_model, 'num_chunks':num_chunks, 'output_activation':output_activation,  'batch_size':batch_size, 'epochs':epochs, 'lr':lr, 'dropout_rate':dropout_rate_std,  'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-m1 = Model_Logistic_Baseline(data_dict, params_dict)
-m1.defineModel(); m1.trainModel()
+# m1 = Model_Logistic_Baseline(data_dict, params_dict)
+# m1.defineModel(); m1.trainModel()
 
 
 ## BASELINE TANH MODEL DEFINITION
@@ -100,8 +100,8 @@ base_model=None
 def output_activation(x):
     return tf.nn.tanh(x)
 params_dict = {'weight_decay':weight_decay, 'num_filters_std':num_filters_std, 'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'model_rep':model_rep_baseline, 'base_model':base_model, 'num_chunks':num_chunks, 'output_activation':output_activation,  'batch_size':batch_size, 'epochs':epochs, 'dropout_rate':dropout_rate_std,  'lr':lr, 'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-#m2 = Model_Tanh_Baseline(data_dict, params_dict)
-#m2.defineModel(); m2.trainModel()
+# m2 = Model_Tanh_Baseline(data_dict, params_dict)
+# m2.defineModel(); m2.trainModel()
 
 ## ENSEMBLE LOGISTIC MODEL DEFINITION
 name = 'logistic_diverse'+'_'+DATA_DESC; num_chunks=2
@@ -110,8 +110,8 @@ base_model=None
 def output_activation(x):
     return tf.nn.sigmoid(x)
 params_dict = {'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'base_model':base_model, 'num_chunks':num_chunks, 'model_rep': model_rep_ens, 'output_activation':output_activation, 'num_filters_ens':num_filters_ens, 'num_filters_ens_2':num_filters_ens_2,'batch_size':batch_size, 'epochs':epochs, 'dropout_rate':dropout_rate_ens,  'lr':lr, 'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-#m3 = Model_Logistic_Ensemble(data_dict, params_dict)
-#m3.defineModel(); m3.trainModel()
+# m3 = Model_Logistic_Ensemble(data_dict, params_dict)
+# m3.defineModel(); m3.trainModel()
 
 
 
@@ -136,8 +136,8 @@ np.random.shuffle(M)
 idx=np.random.permutation(code_length)
 M = M[0:num_codes, idx[0:code_length]]
 params_dict = {'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'base_model':base_model, 'num_chunks':num_chunks, 'model_rep': model_rep_ens, 'output_activation':output_activation, 'num_filters_ens':num_filters_ens, 'num_filters_ens_2':num_filters_ens_2,'batch_size':batch_size, 'epochs':epochs, 'dropout_rate':dropout_rate_ens,  'lr':lr, 'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-#m4 = Model_Tanh_Ensemble(data_dict, params_dict)
-#m4.defineModel();   m4.trainModel()
+# m4 = Model_Tanh_Ensemble(data_dict, params_dict)
+# m4.defineModel();   m4.trainModel()
 
 
 
@@ -152,6 +152,6 @@ np.random.shuffle(M)
 idx=np.random.permutation(code_length)
 M = M[0:num_codes, idx[0:code_length]]
 params_dict = {'BATCH_NORMALIZATION_FLAG':BATCH_NORMALIZATION_FLAG, 'DATA_AUGMENTATION_FLAG':DATA_AUGMENTATION_FLAG, 'M':M, 'base_model':base_model, 'num_chunks':num_chunks, 'model_rep': model_rep_ens, 'output_activation':output_activation, 'num_filters_ens':num_filters_ens, 'num_filters_ens_2':num_filters_ens_2,'batch_size':batch_size, 'epochs':epochs, 'dropout_rate':dropout_rate_ens,  'lr':lr, 'blend_factor':blend_factor, 'inp_shape':inp_shape, 'noise_stddev':noise_stddev, 'weight_save_freq':weight_save_freq, 'name':name, 'model_path':model_path}
-#m5 = Model_Tanh_Ensemble(data_dict, params_dict)
-#m5.defineModel();   m5.trainModel()
+# m5 = Model_Tanh_Ensemble(data_dict, params_dict)
+# m5.defineModel();   m5.trainModel()
 

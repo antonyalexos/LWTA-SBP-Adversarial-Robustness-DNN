@@ -6,10 +6,10 @@ Full implementation of all methods of Abstract class "Model"
 
 import os
 import tensorflow as tf
-tf.compat.v1.disable_eager_execution()
-#tf.enable_eager_execution()
-#tf.config.experimental_run_functions_eagerly(True)
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
+# tf.compat.v1.disable_eager_execution()
+tf.enable_eager_execution()
+tf.config.experimental_run_functions_eagerly(True)
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import numpy as np
 from tensorflow.keras.layers import AveragePooling2D, BatchNormalization, Dropout, Multiply, Lambda, Input, Dense, Conv2D, MaxPooling2D, Flatten, Activation, UpSampling2D, Concatenate, GaussianNoise,Reshape
 from tensorflow.keras.utils import plot_model
@@ -22,7 +22,8 @@ from ClassBlender import ClassBlender
 from DataAugmenter import DataAugmenter
 from sbp_lwta_con2d_layer import SB_Conv2d
 from sbp_lwta_dense_layer import SB_Layer
-
+from lwta_conv2d_activation import LWTA_Conv2D_Activation
+from lwta_dense_activation import LWTA_Dense_Activation
 
 #Full architectural definition for all "baseline" models used in the paper
 def defineModelBaseline(self):
@@ -42,46 +43,47 @@ def defineModelBaseline(self):
 
 	#for some reason the tensor has None dimensions. Since they do not change we are going to put them back
 #        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],x.shape[2]])
-    # for CIFAR the last dimension is 3. But for MNIST it should be something else.
-        x.set_shape([x.shape[0], self.params_dict['inp_shape'][0],self.params_dict['inp_shape'][1],3])
+    # for CIFAR the last dimension is 3. But for MNIST it should be 1.
+#         x.set_shape([x.shape[0], 32,32,3])
+        # the same function but for MNIST
+        x.set_shape([x.shape[0],28,28,1])
     
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-           # x = SB_Conv2d(ksize=[5,5,int(self.params_dict['num_filters_std'][0]//2),2],activation='lwta',sbp=True)(x)
-            
+            x = Conv2D(self.params_dict['num_filters_std'][0], (5,5), activation='linear', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x,_ = LWTA_Conv2D_Activation()(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x = Conv2D(self.params_dict['num_filters_std'][0], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-       # x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][0]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
+        x = Conv2D(self.params_dict['num_filters_std'][0], (3,3), strides=(2,2), activation='linear', padding='same')(x)
+        x,_ = LWTA_Conv2D_Activation()(x)
 
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][1], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-         #   x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],activation='lwta',sbp=True)(x)
+            x = Conv2D(self.params_dict['num_filters_std'][1], (3, 3), activation='linear', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x,_ = LWTA_Conv2D_Activation()(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x = Conv2D(self.params_dict['num_filters_std'][1], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-       # x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][1]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)               
+        x = Conv2D(self.params_dict['num_filters_std'][1], (3,3), strides=(2,2), activation='linear', padding='same')(x)
+        x,_ = LWTA_Conv2D_Activation()(x)
         
         for rep in np.arange(self.params_dict['model_rep']):
-            x = Conv2D(self.params_dict['num_filters_std'][2], (3, 3), activation='elu', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
-        #    x = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],activation='lwta',sbp=True)(x)
+            x = Conv2D(self.params_dict['num_filters_std'][2], (3, 3), activation='linear', padding='same', kernel_regularizer=regularizers.l2(self.params_dict['weight_decay']))(x)
+            x,_ = LWTA_Conv2D_Activation()(x)
             if self.params_dict['BATCH_NORMALIZATION_FLAG']>0:
                 x = BatchNormalization()(x)
 
-        x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='elu', padding='same')(x)
-        #x_ = SB_Conv2d(ksize=[3,3,int(self.params_dict['num_filters_std'][2]//2),2],strides=[2,2,2,2],activation='lwta',sbp=True)(x)
+        x_ = Conv2D(self.params_dict['num_filters_std'][2], (3,3), strides=(2,2), activation='linear', padding='same')(x)
+        x_,_ = LWTA_Conv2D_Activation()(x_)
 
         x_ = Flatten()(x_)
 #        x_ = tf.contrib.layers.flatten(x_)
                
-        x_ = Dense(128, activation='elu')(x_)
-      #  x_ = SB_Layer(K=64,U=2,activation='lwta',sbp=True)(x_)
-        x_ = Dense(64, activation='elu')(x_) 
-       # x_ = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)     
+        x_ = Dense(128, activation='linear')(x_)
+        x_,_ = LWTA_Dense_Activation()(x_)
+        x_ = Dense(64, activation='linear')(x_)
+        x_,_ = LWTA_Dense_Activation()(x_)     
         x0 = Dense(64, activation='linear')(x_)
-       # x0 = SB_Layer(K=32,U=2,activation='lwta',sbp=True)(x_)
+        x0,_ = LWTA_Dense_Activation()(x_)
         
        # x1 = Dense(self.params_dict['M'].shape[1], activation='linear', kernel_regularizer=regularizers.l2(0.0))(x0)
         x1 = SB_Layer(K=int(self.params_dict['M'].shape[1]//2),U=2,activation='none',sbp=True)(x0)
