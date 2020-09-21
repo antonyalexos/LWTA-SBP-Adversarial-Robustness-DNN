@@ -1,6 +1,6 @@
 # Local Competition and Uncertainty for Adversarial Robustness
 
-This repository is the official implementation of Local Competition and Uncertainty for Adversarial Robustness.
+This repository is the official implementation of [Local Competition and Uncertainty for Adversarial Robustness](https://arxiv.org/abs/2006.10620).
 
 
 ## Requirements
